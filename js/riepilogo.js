@@ -63,10 +63,10 @@
       html += `<td><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
       html += `<td>${escapeHtml(r["Classe/i"])}</td>`;
       html += `<td>${escapeHtml(r[specKey])}</td>`;
-      html += `<td class="num-cell">${escapeHtml(r["Personal Best"])}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Personal Best"], r["Tipo"]))}</td>`;
       html += `<td>${escapeHtml(r["Data PB"])}</td>`;
       html += `<td class="wrap">${r["Gara PB"] ? `<a href="${linkToGara(r["Gara PB"])}">${escapeHtml(r["Gara PB"])}</a>` : ""}</td>`;
-      html += `<td class="num-cell">${escapeHtml(r["Season Best"])}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Season Best"], r["Tipo"]))}</td>`;
       html += `<td>${escapeHtml(r["Data SB"])}</td>`;
       html += `<td class="wrap">${r["Gara SB"] ? `<a href="${linkToGara(r["Gara SB"])}">${escapeHtml(r["Gara SB"])}</a>` : ""}</td>`;
       html += "</tr>";

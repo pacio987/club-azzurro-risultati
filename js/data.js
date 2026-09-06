@@ -78,6 +78,24 @@ function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+// Converte un valore numerico (es. "145,50", secondi) nel formato tradizionale
+// usato nel resto del database: 1'01"01 se sopra il minuto, 13"28 se sotto.
+// Per le misure (lanci/salti) mostra semplicemente il numero con la virgola.
+function formatRisultato(valore, tipo) {
+  if (!valore) return "";
+  const num = parseFloat(String(valore).replace(",", "."));
+  if (isNaN(num)) return valore;
+  if (tipo !== "tempo") return num.toFixed(2).replace(".", ",");
+  if (num >= 60) {
+    const minuti = Math.floor(num / 60);
+    const secondi = (num - minuti * 60).toFixed(2).padStart(5, "0");
+    const [s, c] = secondi.split(".");
+    return `${minuti}'${s}"${c}`;
+  }
+  const [s, c] = num.toFixed(2).split(".");
+  return `${s}"${c}`;
+}
+
 function linkToAtleta(nome) {
   return `atleta.html?nome=${encodeURIComponent(nome)}`;
 }
