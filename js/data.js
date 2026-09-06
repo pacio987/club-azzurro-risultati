@@ -5,17 +5,33 @@
 // ============================================================
 const SHEET_ID = "1wVvXVXfBpli_hTKIDwHiT3sEOfPU2RyFmxxCn9Cuma4";
 
+// Intestazioni reali di ogni scheda, definite qui invece che lette dal foglio:
+// dopo la conversione in Google Sheets, titolo/note e intestazione a volte
+// finiscono appiccicati nella stessa riga (celle unite che si comportano
+// diversamente), quindi non ci si può affidare a leggerle dal CSV.
+const CANONICAL_HEADERS = {
+  "Riepilogo": ["Atleta", "Classe/i", "Specialita'", "Tipo", "Personal Best",
+                "Data PB", "Gara PB", "Season Best", "Data SB", "Gara SB"],
+  "Risultati": ["Data", "Gara", "Specialità", "Cat.", "Sesso", "Link", "Atleta",
+                "Risultato", "Posizione", "Note", "Tipo", "Risultato numerico",
+                "Vento", "Attrezzo", "Anno", "Chiave", "ChiaveStagione", "Valido PB/SB"],
+  "Atleti": ["Atleta", "Categoria/e", "Sesso", "Anno di nascita",
+             "N. risultati importati", "Scheda personale"]
+};
+
 function csvUrl(sheetName) {
   return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
 }
 
-// Converte le righe grezze del CSV (array di array) in array di oggetti,
-// individuando da sola la riga di intestazione vera (le schede hanno un
-// titolo e note sopra le colonne, quindi l'intestazione non e' la riga 1).
-function rowsToObjects(rows) {
-  const headerIdx = rows.findIndex(r => r.includes("Atleta") || r.includes("Data"));
+// Converte le righe grezze del CSV (array di array) in array di oggetti.
+// Trova la riga dove iniziano i dati cercando una cella che contenga "Atleta"
+// (presente nell'intestazione di ogni scheda, anche se mescolata ad altro
+// testo) e usa le intestazioni note invece di provare a interpretarle dal
+// foglio stesso.
+function rowsToObjects(rows, sheetName) {
+  const headers = CANONICAL_HEADERS[sheetName];
+  const headerIdx = rows.findIndex(r => r.some(c => (c || "").includes("Atleta")));
   if (headerIdx === -1) return [];
-  const headers = rows[headerIdx].map(h => normalizeCell(h));
   return rows
     .slice(headerIdx + 1)
     .filter(r => r.some(c => (c || "").trim() !== ""))
@@ -45,7 +61,7 @@ async function fetchSheet(sheetName) {
   if (!resp.ok) throw new Error("network");
   const text = await resp.text();
   const parsed = Papa.parse(text.trim(), { skipEmptyLines: false });
-  return rowsToObjects(parsed.data);
+  return rowsToObjects(parsed.data, sheetName);
 }
 
 // Converte una data in formato "gg/mm/aaaa" (o simile) in un valore
