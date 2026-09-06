@@ -137,7 +137,7 @@
       html += `<td class="wrap">${r["Gara"] ? `<a href="${linkToGara(r["Gara"], r["Data"])}">${escapeHtml(r["Gara"])}</a>` : ""}</td>`;
       html += `<td>${escapeHtml(r["Specialità"])}</td>`;
       html += `<td class="num-cell">${escapeHtml(r["Risultato"])}</td>`;
-      html += `<td>${escapeHtml(r["Vento"])}</td>`;
+      html += `<td>${escapeHtml(formatVento(r["Vento"]))}</td>`;
       html += `<td>${escapeHtml(r["Posizione"])}</td>`;
       html += `<td class="note-cell">${escapeHtml(r["Note"])}</td>`;
       html += "</tr>";

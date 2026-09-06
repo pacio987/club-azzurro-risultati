@@ -108,6 +108,16 @@ function formatRisultato(valore, tipo) {
   return `${s}"${c}`;
 }
 
+// Formatta il vento: segno "+" per i positivi, "-" gia' presente per i
+// negativi, nessun segno per zero, e sempre un decimale (es. 0,0 / +1,1 / -2,0).
+function formatVento(valore) {
+  if (valore === "" || valore === null || valore === undefined) return "";
+  const num = parseFloat(String(valore).replace(",", "."));
+  if (isNaN(num)) return valore;
+  const segno = num > 0 ? "+" : (num < 0 ? "-" : "");
+  return segno + Math.abs(num).toFixed(1).replace(".", ",");
+}
+
 function linkToAtleta(nome) {
   return `atleta.html?nome=${encodeURIComponent(nome)}`;
 }
