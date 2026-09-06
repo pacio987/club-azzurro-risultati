@@ -78,6 +78,18 @@ function qs(name) {
   return new URLSearchParams(window.location.search).get(name);
 }
 
+// Determina l'evidenziazione della riga in base alle sigle scritte nella
+// colonna Note: priorita' dal record piu' importante al piu' comune.
+function rigaEvidenziata(note) {
+  const n = note || "";
+  if (/\bWR\b/.test(n)) return "is-wr";
+  if (/\bRE\b/.test(n)) return "is-re";
+  if (/\bRI\b/.test(n)) return "is-ri";
+  if (/\bPB\b/.test(n)) return "is-pb";
+  if (/\bSB\b/.test(n)) return "is-sb";
+  return "";
+}
+
 // Converte un valore numerico (es. "145,50", secondi) nel formato tradizionale
 // usato nel resto del database: 1'01"01 se sopra il minuto, 13"28 se sotto.
 // Per le misure (lanci/salti) mostra semplicemente il numero con la virgola.

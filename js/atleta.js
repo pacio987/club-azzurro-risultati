@@ -32,10 +32,7 @@
   const anno = anagrafica ? anagrafica["Anno di nascita"] : "";
 
   function rowClass(r) {
-    const note = r["Note"] || "";
-    if (note.includes("PB")) return "is-pb";
-    if (note.includes("SB")) return "is-sb";
-    return "";
+    return rigaEvidenziata(r["Note"]);
   }
 
   let html = `<h1 class="page-title">${escapeHtml(nome)}</h1>`;
@@ -69,7 +66,7 @@
   if (storico.length === 0) {
     html += '<p class="state-msg">Nessun risultato ancora registrato.</p>';
   } else {
-    html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span></div>';
+    html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span><span><i class="swatch ri"></i> Record Italiano</span><span><i class="swatch re"></i> Record Europeo</span><span><i class="swatch wr"></i> Record del Mondo</span></div>';
     html += '<div class="table-wrap"><table><thead><tr>' +
       '<th>Data</th><th>Gara</th><th>Specialità</th><th>Risultato</th><th>Vento</th><th>Pos.</th><th>Note</th>' +
       '</tr></thead><tbody>';

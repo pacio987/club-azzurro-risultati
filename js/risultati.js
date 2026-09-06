@@ -34,10 +34,7 @@
   }
 
   function rowClass(r) {
-    const note = r["Note"] || "";
-    if (note.includes("PB")) return "is-pb";
-    if (note.includes("SB")) return "is-sb";
-    return "";
+    return rigaEvidenziata(r["Note"]);
   }
 
   function render() {
@@ -61,7 +58,7 @@
     const cols = [
       ["Data", "Data"], ["Gara", "Gara"], ["Specialità", "Specialità"], ["Cat.", "Cat."],
       ["Sesso", "Sesso"], ["Atleta", "Atleta"], ["Risultato", "Risultato"],
-      ["Vento", "Vento"], ["Posizione", "Pos."], ["Note", "Note"]
+      ["Vento", "Vento"], ["Note", "Note"], ["Link", "Link"]
     ];
 
     let html = '<div class="table-wrap"><table><thead><tr>';
@@ -80,8 +77,8 @@
       html += `<td class="wrap"><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
       html += `<td class="num-cell">${escapeHtml(r["Risultato"])}</td>`;
       html += `<td>${escapeHtml(r["Vento"])}</td>`;
-      html += `<td>${escapeHtml(r["Posizione"])}</td>`;
       html += `<td class="wrap">${escapeHtml(r["Note"])}</td>`;
+      html += `<td>${r["Link"] ? `<a href="${escapeHtml(r["Link"])}" target="_blank" rel="noopener">link</a>` : ""}</td>`;
       html += "</tr>";
     });
     html += "</tbody></table></div>";

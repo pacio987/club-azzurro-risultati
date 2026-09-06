@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Atleti · Club Azzurro</title>
+<title>Gare · Club Azzurro</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -12,25 +12,25 @@
   <div class="site-header-inner">
     <div class="wordmark">CLUB <span>AZZURRO</span></div>
     <nav class="site-nav">
-      <a href="index.html" class="active">Atleti</a>
+      <a href="index.html">Atleti</a>
       <a href="risultati.html">Risultati</a>
-      <a href="gare.html">Gare</a>
+      <a href="gare.html" class="active">Gare</a>
       <a href="risorse.html">Risorse</a>
     </nav>
   </div>
 </header>
 
 <main>
-  <h1 class="page-title">Atleti</h1>
-  <p class="page-subtitle">Personal Best e Season Best per atleta e specialità, aggiornati in automatico dal database.</p>
+  <h1 class="page-title">Gare</h1>
+  <p class="page-subtitle">Tutte le gare registrate nel database, dalla più recente.</p>
 
   <div class="controls">
-    <input type="search" id="search" placeholder="Cerca atleta o specialità…" aria-label="Cerca atleta o specialità">
+    <input type="search" id="search" placeholder="Cerca gara…" aria-label="Cerca gara">
   </div>
   <p class="result-count" id="count"></p>
 
   <div id="table-container">
-    <p class="state-msg">Carico i risultati…</p>
+    <p class="state-msg">Carico le gare…</p>
   </div>
 </main>
 
@@ -38,6 +38,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="js/data.js"></script>
-<script src="js/riepilogo.js"></script>
+<script src="js/gare-lista.js"></script>
 </body>
 </html>

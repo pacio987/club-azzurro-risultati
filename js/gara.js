@@ -24,10 +24,7 @@
   }
 
   function rowClass(r) {
-    const note = r["Note"] || "";
-    if (note.includes("PB")) return "is-pb";
-    if (note.includes("SB")) return "is-sb";
-    return "";
+    return rigaEvidenziata(r["Note"]);
   }
 
   const data = righe[0]["Data"];
@@ -39,7 +36,7 @@
   html += `${righe.length} risultati dei tuoi atleti`;
   html += "</p>";
 
-  html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span></div>';
+  html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span><span><i class="swatch ri"></i> Record Italiano</span><span><i class="swatch re"></i> Record Europeo</span><span><i class="swatch wr"></i> Record del Mondo</span></div>';
   html += '<div class="table-wrap"><table><thead><tr>' +
     '<th>Atleta</th><th>Specialità</th><th>Cat.</th><th>Sesso</th><th>Risultato</th><th>Vento</th><th>Pos.</th><th>Note</th>' +
     '</tr></thead><tbody>';
