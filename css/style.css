@@ -142,6 +142,7 @@ tbody td {
   white-space: nowrap;
 }
 tbody td.wrap { white-space: normal; min-width: 160px; }
+tbody td.note-cell { white-space: normal; max-width: 130px; }
 tbody tr:hover { background: var(--azzurro-light); }
 .num-cell { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.02rem; }
 

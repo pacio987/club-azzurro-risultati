@@ -70,14 +70,14 @@
     filtered.slice(0, 1000).forEach(r => {
       html += `<tr class="${rowClass(r)}">`;
       html += `<td>${escapeHtml(r["Data"])}</td>`;
-      html += `<td class="wrap">${r["Gara"] ? `<a href="${linkToGara(r["Gara"])}">${escapeHtml(r["Gara"])}</a>` : ""}</td>`;
+      html += `<td class="wrap">${r["Gara"] ? `<a href="${linkToGara(r["Gara"], r["Data"])}">${escapeHtml(r["Gara"])}</a>` : ""}</td>`;
       html += `<td>${escapeHtml(r["Specialità"])}</td>`;
       html += `<td>${escapeHtml(r["Cat."])}</td>`;
       html += `<td>${escapeHtml(r["Sesso"])}</td>`;
       html += `<td class="wrap"><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
       html += `<td class="num-cell">${escapeHtml(r["Risultato"])}</td>`;
       html += `<td>${escapeHtml(r["Vento"])}</td>`;
-      html += `<td class="wrap">${escapeHtml(r["Note"])}</td>`;
+      html += `<td class="note-cell">${escapeHtml(r["Note"])}</td>`;
       html += `<td>${r["Link"] ? `<a href="${escapeHtml(r["Link"])}" target="_blank" rel="noopener">link</a>` : ""}</td>`;
       html += "</tr>";
     });

@@ -111,8 +111,13 @@ function formatRisultato(valore, tipo) {
 function linkToAtleta(nome) {
   return `atleta.html?nome=${encodeURIComponent(nome)}`;
 }
-function linkToGara(nome) {
-  return `gara.html?nome=${encodeURIComponent(nome)}`;
+// Il nome della gara da solo non basta: la stessa manifestazione si ripete
+// ogni anno con lo stesso nome, quindi aggiungiamo l'anno (ricavato dalla
+// data del risultato) per distinguere le diverse edizioni.
+function linkToGara(nome, data) {
+  const anno = data ? (String(data).match(/\d{4}$/) || [])[0] : null;
+  const base = `gara.html?nome=${encodeURIComponent(nome)}`;
+  return anno ? `${base}&anno=${anno}` : base;
 }
 
 function escapeHtml(s) {
@@ -127,3 +132,59 @@ function renderState(container, message, isError) {
 }
 
 const ERROR_MSG = 'Non riesco a leggere il foglio Google. Controlla che sia condiviso come "Chiunque abbia il link - Visualizzatore" e riprova.';
+
+// ============================================================
+// Elenco ufficiale Club Azzurro: unici atleti da mostrare nella pagina Atleti.
+// Le altre pagine (Risultati, Gare, schede) restano invariate e mostrano
+// tutto lo storico.
+// ============================================================
+const ROSTER_UFFICIALE = [
+  "Bagaini Riccardo", "Bottazzini Fabio", "Calcagni Carlo", "Cicchetti Marco",
+  "Dedaj Arjola", "Dieng Ndiaga", "Filippi Giuliana Chiara", "Legnante Assunta",
+  "Loragno Francesco", "Manu Maxcel Amo", "Petrillo Valentina", "Sabatini Ambra",
+  "Tapia Oney", "Antolini Greta", "Cavallero Edoardo", "Dalla Mana Riccardo",
+  "Fascetta Giorgia", "Inga Antonella", "Morana Davide Bartolo",
+  "Poggiani Ange Bertin", "Tonetto Lorenzo", "Bona Ephrem", "Chiarlone Matteo",
+  "Cortinovis Francesco", "Di Rosa Francesco", "Diane Saliou", "Fiore Davide",
+  "Francullo Viola", "Friscia Alessia", "Imperio Francesco", "Morato Laura",
+  "Pirola Gabriele", "Zani Nicholas", "Jacome Navas Marcelo Sebastian",
+  "Vio Grandis Beatrice Maria", "Chiarizia Riccardo", "El Idrissi Mohammed Amine",
+  "Maselli Marco", "Mastrandrea Felice"
+];
+
+// Toglie accenti, spazi e punteggiatura per confrontare due nomi in modo
+// tollerante a piccole differenze di scrittura (es. "Mohamed" / "Mohammed").
+function normalizzaNome(s) {
+  return (s || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // toglie accenti
+    .toUpperCase()
+    .replace(/[^A-Z]/g, "");
+}
+
+function distanzaLevenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const d = [];
+  for (let i = 0; i <= m; i++) d.push([i]);
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const costo = a[i - 1] === b[j - 1] ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + costo);
+    }
+  }
+  return d[m][n];
+}
+
+// Vero se il nome del foglio corrisponde a uno dell'elenco ufficiale, anche
+// con piccole differenze (nome completo con un secondo nome in piu', o un
+// paio di lettere diverse per un refuso di battitura).
+function nelRosterUfficiale(nomeFoglio) {
+  const key = normalizzaNome(nomeFoglio);
+  if (!key) return false;
+  return ROSTER_UFFICIALE.some(ufficiale => {
+    const u = normalizzaNome(ufficiale);
+    if (u === key) return true;
+    if (u.startsWith(key) || key.startsWith(u)) return true;
+    return distanzaLevenshtein(u, key) <= 2;
+  });
+}

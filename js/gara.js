@@ -1,6 +1,7 @@
 (async function () {
   const content = document.getElementById("content");
   const nome = qs("nome");
+  const anno = qs("anno");
 
   if (!nome) {
     renderState(content, 'Nessuna gara indicata. Torna a <a href="risultati.html">Risultati</a> e scegline una.', true);
@@ -15,11 +16,13 @@
     return;
   }
 
-  const righe = risultati.filter(r => r["Gara"] === nome)
+  // stessa manifestazione, edizioni diverse: se conosciamo l'anno lo usiamo
+  // per prendere solo l'edizione giusta, non tutte quelle con lo stesso nome
+  const righe = risultati.filter(r => r["Gara"] === nome && (!anno || String(r["Data"]).endsWith(anno)))
     .sort((a, b) => (a["Specialità"] || "").localeCompare(b["Specialità"] || "") || (a["Atleta"] || "").localeCompare(b["Atleta"] || ""));
 
   if (righe.length === 0) {
-    renderState(content, `Nessun risultato trovato per la gara "${escapeHtml(nome)}". Torna a <a href="risultati.html">Risultati</a>.`, true);
+    renderState(content, `Nessun risultato trovato per la gara "${escapeHtml(nome)}"${anno ? " (" + anno + ")" : ""}. Torna a <a href="risultati.html">Risultati</a>.`, true);
     return;
   }
 
@@ -49,7 +52,7 @@
     html += `<td class="num-cell">${escapeHtml(r["Risultato"])}</td>`;
     html += `<td>${escapeHtml(r["Vento"])}</td>`;
     html += `<td>${escapeHtml(r["Posizione"])}</td>`;
-    html += `<td class="wrap">${escapeHtml(r["Note"])}</td>`;
+    html += `<td class="note-cell">${escapeHtml(r["Note"])}</td>`;
     html += "</tr>";
   });
   html += "</tbody></table></div>";

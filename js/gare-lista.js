@@ -19,15 +19,16 @@
     return;
   }
 
-  // raggruppa i risultati per nome gara: prima data trovata, numero di risultati,
-  // numero di atleti distinti coinvolti
+  // raggruppa i risultati per nome gara + anno (la stessa manifestazione si
+  // ripete ogni anno con lo stesso nome, quindi l'anno fa parte della chiave)
   const mappa = {};
   risultati.forEach(r => {
-    const nome = r["Gara"];
-    if (!mappa[nome]) mappa[nome] = { nome, data: r["Data"], atleti: new Set(), n: 0 };
-    mappa[nome].n++;
-    mappa[nome].atleti.add(r["Atleta"]);
-    if (parseDateValue(r["Data"]) > parseDateValue(mappa[nome].data)) mappa[nome].data = r["Data"];
+    const anno = (String(r["Data"]).match(/\d{4}$/) || [])[0] || "?";
+    const chiave = r["Gara"] + "|" + anno;
+    if (!mappa[chiave]) mappa[chiave] = { nome: r["Gara"], anno, data: r["Data"], atleti: new Set(), n: 0 };
+    mappa[chiave].n++;
+    mappa[chiave].atleti.add(r["Atleta"]);
+    if (parseDateValue(r["Data"]) > parseDateValue(mappa[chiave].data)) mappa[chiave].data = r["Data"];
   });
   gare = Object.values(mappa).map(g => ({ ...g, nAtleti: g.atleti.size }));
 
@@ -61,7 +62,7 @@
 
     filtered.forEach(g => {
       html += "<tr>";
-      html += `<td class="wrap"><a href="${linkToGara(g.nome)}">${escapeHtml(g.nome)}</a></td>`;
+      html += `<td class="wrap"><a href="${linkToGara(g.nome, g.data)}">${escapeHtml(g.nome)}</a></td>`;
       html += `<td>${escapeHtml(g.data)}</td>`;
       html += `<td>${g.nAtleti}</td>`;
       html += `<td>${g.n}</td>`;
