@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Risultati · Club Azzurro</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-header-inner">
+    <div class="wordmark">CLUB <span>AZZURRO</span></div>
+    <nav class="site-nav">
+      <a href="index.html">Riepilogo</a>
+      <a href="risultati.html" class="active">Risultati</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1 class="page-title">Risultati</h1>
+  <p class="page-subtitle">Tutte le prestazioni registrate, dalla più recente.</p>
+
+  <div class="controls">
+    <input type="search" id="search" placeholder="Cerca atleta o gara…" aria-label="Cerca atleta o gara">
+    <select id="filter-spec" aria-label="Filtra per specialità"><option value="">Tutte le specialità</option></select>
+    <select id="filter-year" aria-label="Filtra per anno"><option value="">Tutti gli anni</option></select>
+  </div>
+  <div class="legend">
+    <span><i class="swatch gold"></i> Personal Best</span>
+    <span><i class="swatch azzurro"></i> Season Best</span>
+  </div>
+  <p class="result-count" id="count"></p>
+
+  <div id="table-container">
+    <p class="state-msg">Carico i risultati…</p>
+  </div>
+</main>
+
+<footer>Club Azzurro — nazionale italiana di atletica leggera paralimpica</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="js/data.js"></script>
+<script src="js/risultati.js"></script>
+</body>
+</html>
