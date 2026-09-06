@@ -219,3 +219,54 @@ function fasciaAtleta(nomeFoglio) {
   }
   return "Interesse";
 }
+
+// Classe attuale confermata dall'utente per ciascun atleta (fissa: se cambia,
+// va aggiornata qui a mano, non e' calcolata dal foglio).
+const CLASSE_UFFICIALE = {
+  "Bagaini Riccardo": "T47", "Bottazzini Fabio": "T64", "Calcagni Carlo": "T72",
+  "Cicchetti Marco": "T44", "Dedaj Arjola": "T11", "Dieng Ndiaga": "T20",
+  "Filippi Giuliana Chiara": "T64", "Legnante Assunta": "F11", "Loragno Francesco": "T64",
+  "Manu Maxcel Amo": "T64", "Petrillo Valentina": "T12", "Sabatini Ambra": "T63",
+  "Tapia Oney": "F11", "Antolini Greta": "T13", "Cavallero Edoardo": "T37",
+  "Dalla Mana Riccardo": "T11", "Fascetta Giorgia": "T12", "Inga Antonella": "T12",
+  "Morana Davide Bartolo": "T62", "Poggiani Ange Bertin": "T38", "Tonetto Lorenzo": "F64",
+  "Bona Ephrem": "T63", "Chiarlone Matteo": "F13", "Cortinovis Francesco": "T13",
+  "Di Rosa Francesco": "T46", "Diane Saliou": "T12", "Fiore Davide": "T72",
+  "Francullo Viola": "T13", "Friscia Alessia": "T47", "Imperio Francesco": "T64",
+  "Morato Laura": "T54", "Pirola Gabriele": "T11", "Zani Nicholas": "T33",
+  "Jacome Navas Marcelo Sebastian": "F46", "Vio Grandis Beatrice Maria": "T62",
+  "Chiarizia Riccardo": "T13", "El Idrissi Mohammed Amine": "T20",
+  "Maselli Marco": "T20", "Mastrandrea Felice": "T20"
+};
+
+function classeUfficiale(nomeFoglio) {
+  const key = normalizzaNome(nomeFoglio);
+  for (const nome in CLASSE_UFFICIALE) {
+    const u = normalizzaNome(nome);
+    if (u === key || u.startsWith(key) || key.startsWith(u) || distanzaLevenshtein(u, key) <= 2) {
+      return CLASSE_UFFICIALE[nome];
+    }
+  }
+  return "";
+}
+
+// Ordine di visualizzazione delle specialita' su corsa, dalla piu' breve alla
+// piu' lunga (l'indoor subito dopo l'equivalente all'aperto, es. 100 m poi
+// indoor 60 m - non esistendo i 100 m indoor). Salti e lanci, non essendo
+// una progressione di distanza, restano in ordine alfabetico e vengono
+// mostrati dopo tutte le corse.
+const ORDINE_SPECIALITA = [
+  "80 m", "100 m", "indoor 60 m",
+  "150 m", "200 m", "indoor 200 m",
+  "300 m", "400 m", "indoor 400 m",
+  "800 m", "indoor 800 m",
+  "1500 m", "indoor 1500 m"
+];
+function confrontaSpecialita(a, b) {
+  const ia = ORDINE_SPECIALITA.indexOf(a);
+  const ib = ORDINE_SPECIALITA.indexOf(b);
+  if (ia >= 0 && ib >= 0) return ia - ib;
+  if (ia >= 0) return -1;
+  if (ib >= 0) return 1;
+  return a.localeCompare(b);
+}

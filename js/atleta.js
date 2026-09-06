@@ -18,6 +18,8 @@
   }
 
   const speclista = riepilogo.filter(r => r["Atleta"] === nome);
+  const specKeyOrdinamento = speclista.length > 0 && speclista[0]["Specialita'"] !== undefined ? "Specialita'" : "Specialità";
+  speclista.sort((a, b) => confrontaSpecialita(a[specKeyOrdinamento], b[specKeyOrdinamento]));
   const storico = risultati.filter(r => r["Atleta"] === nome)
     .sort((a, b) => parseDateValue(b["Data"]) - parseDateValue(a["Data"]));
   const anagrafica = atleti.find(r => r["Atleta"] === nome);
@@ -27,7 +29,7 @@
     return;
   }
 
-  const classe = anagrafica ? anagrafica["Categoria/e"] : (speclista[0] ? speclista[0]["Classe/i"] : "");
+  const classe = classeUfficiale(nome) || (anagrafica ? anagrafica["Categoria/e"] : (speclista[0] ? speclista[0]["Classe/i"] : ""));
   const sesso = anagrafica ? anagrafica["Sesso"] : "";
   const anno = anagrafica ? anagrafica["Anno di nascita"] : "";
 
@@ -82,7 +84,7 @@
     if (migliore) sbPerAnno[chiave] = { specialita: spec, tipo, anno, valore, data: r["Data"], gara: r["Gara"] };
   });
   const righeSbAnno = Object.values(sbPerAnno).sort((a, b) =>
-    a.specialita.localeCompare(b.specialita) || b.anno.localeCompare(a.anno));
+    confrontaSpecialita(a.specialita, b.specialita) || b.anno.localeCompare(a.anno));
 
   if (righeSbAnno.length > 0) {
     html += '<h2 class="section-title">Season Best per anno</h2>';

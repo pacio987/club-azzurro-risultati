@@ -19,9 +19,15 @@
     return;
   }
 
+  // Classe attuale: elenco fisso confermato dall'utente (vedi data.js),
+  // non calcolata dal foglio.
+  function classeDi(r) {
+    return classeUfficiale(r["Atleta"]) || r["Categoria/e"] || "";
+  }
+
   function matches(r, q) {
     if (!q) return true;
-    const hay = `${r["Atleta"]} ${r["Categoria/e"] || ""}`.toLowerCase();
+    const hay = `${r["Atleta"]} ${classeDi(r)}`.toLowerCase();
     return hay.includes(q.toLowerCase());
   }
 
@@ -30,8 +36,8 @@
     let filtered = rows.filter(r => matches(r, q) && r["Atleta"]);
 
     filtered.sort((a, b) => {
-      let va = sortKey === "Fascia" ? fasciaAtleta(a["Atleta"]) : (a[sortKey] || "");
-      let vb = sortKey === "Fascia" ? fasciaAtleta(b["Atleta"]) : (b[sortKey] || "");
+      let va = sortKey === "Fascia" ? fasciaAtleta(a["Atleta"]) : (sortKey === "Categoria/e" ? classeDi(a) : (a[sortKey] || ""));
+      let vb = sortKey === "Fascia" ? fasciaAtleta(b["Atleta"]) : (sortKey === "Categoria/e" ? classeDi(b) : (b[sortKey] || ""));
       if (va < vb) return -1 * sortDir;
       if (va > vb) return 1 * sortDir;
       return 0;
@@ -58,7 +64,7 @@
     filtered.forEach(r => {
       html += "<tr>";
       html += `<td class="wrap"><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
-      html += `<td>${escapeHtml(r["Categoria/e"])}</td>`;
+      html += `<td>${escapeHtml(classeDi(r))}</td>`;
       html += `<td>${escapeHtml(r["Sesso"])}</td>`;
       html += `<td>${escapeHtml(r["Anno di nascita"])}</td>`;
       html += `<td>${escapeHtml(fasciaAtleta(r["Atleta"]))}</td>`;
