@@ -7,29 +7,24 @@
     return;
   }
 
-  let riepilogo, risultati, atleti;
+  let risultati, atleti;
   try {
-    [riepilogo, risultati, atleti] = await Promise.all([
-      fetchSheet("Riepilogo"), fetchSheet("Risultati"), fetchSheet("Atleti")
-    ]);
+    [risultati, atleti] = await Promise.all([fetchSheet("Risultati"), fetchSheet("Atleti")]);
   } catch (e) {
     renderState(content, ERROR_MSG, true);
     return;
   }
 
-  const speclista = riepilogo.filter(r => r["Atleta"] === nome);
-  const specKeyOrdinamento = speclista.length > 0 && speclista[0]["Specialita'"] !== undefined ? "Specialita'" : "Specialità";
-  speclista.sort((a, b) => confrontaSpecialita(a[specKeyOrdinamento], b[specKeyOrdinamento]));
   const storico = risultati.filter(r => r["Atleta"] === nome)
     .sort((a, b) => parseDateValue(b["Data"]) - parseDateValue(a["Data"]));
   const anagrafica = atleti.find(r => r["Atleta"] === nome);
 
-  if (speclista.length === 0 && storico.length === 0 && !anagrafica) {
+  if (storico.length === 0 && !anagrafica) {
     renderState(content, `Nessun atleta trovato con il nome "${escapeHtml(nome)}". Torna al <a href="index.html">Riepilogo</a>.`, true);
     return;
   }
 
-  const classe = classeUfficiale(nome) || (anagrafica ? anagrafica["Categoria/e"] : (speclista[0] ? speclista[0]["Classe/i"] : ""));
+  const classe = classeUfficiale(nome) || (anagrafica ? anagrafica["Categoria/e"] : "");
   const sesso = anagrafica ? anagrafica["Sesso"] : "";
   const anno = anagrafica ? anagrafica["Anno di nascita"] : "";
 
@@ -44,28 +39,53 @@
   if (anno) html += `<span>Anno di nascita: <strong>${escapeHtml(anno)}</strong></span>`;
   html += "</p>";
 
+  // Personal Best e Season Best (stagione = anno solare attuale): calcolati qui
+  // direttamente dai risultati grezzi, non da un foglio Riepilogo separato -
+  // niente da mantenere a mano quando compare una specialita' nuova, e usa
+  // gia' la colonna "Valido PB/SB" del foglio (che esclude i risultati con
+  // vento irregolare nelle specialita' dove conta).
+  const annoCorrente = new Date().getFullYear();
+  const pbSbPerSpecialita = {};
+  storico.forEach(r => {
+    const spec = r["Specialità"], tipo = r["Tipo"];
+    const validoStr = r["Valido PB/SB"];
+    if (!spec || !tipo || !validoStr) return;
+    const valore = parseFloat(String(validoStr).replace(",", "."));
+    if (isNaN(valore)) return;
+    const annoRiga = parseInt((String(r["Data"]).match(/\d{4}$/) || [])[0], 10);
+    if (!pbSbPerSpecialita[spec]) pbSbPerSpecialita[spec] = { specialita: spec, tipo };
+    const rec = pbSbPerSpecialita[spec];
+    if (rec.pb === undefined || (tipo === "tempo" ? valore < rec.pb : valore > rec.pb)) {
+      rec.pb = valore; rec.dataPb = r["Data"]; rec.garaPb = r["Gara"];
+    }
+    if (annoRiga === annoCorrente &&
+        (rec.sb === undefined || (tipo === "tempo" ? valore < rec.sb : valore > rec.sb))) {
+      rec.sb = valore; rec.dataSb = r["Data"]; rec.garaSb = r["Gara"];
+    }
+  });
+  const speclista = Object.values(pbSbPerSpecialita)
+    .sort((a, b) => confrontaSpecialita(a.specialita, b.specialita));
+
   if (speclista.length > 0) {
-    const specKey = speclista[0]["Specialita'"] !== undefined ? "Specialita'" : "Specialità";
     html += '<h2 class="section-title">Personal Best e Season Best</h2>';
     html += '<div class="table-wrap"><table><thead><tr>' +
       '<th>Specialità</th><th>PB</th><th>Data PB</th><th>Gara PB</th><th>SB</th><th>Data SB</th><th>Gara SB</th>' +
       '</tr></thead><tbody>';
     speclista.forEach(r => {
       html += "<tr>";
-      html += `<td>${escapeHtml(r[specKey])}</td>`;
-      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Personal Best"], r["Tipo"]))}</td>`;
-      html += `<td>${escapeHtml(r["Data PB"])}</td>`;
-      html += `<td class="wrap">${r["Gara PB"] ? `<a href="${linkToGara(r["Gara PB"], r["Data PB"])}">${escapeHtml(r["Gara PB"])}</a>` : ""}</td>`;
-      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Season Best"], r["Tipo"]))}</td>`;
-      html += `<td>${escapeHtml(r["Data SB"])}</td>`;
-      html += `<td class="wrap">${r["Gara SB"] ? `<a href="${linkToGara(r["Gara SB"], r["Data SB"])}">${escapeHtml(r["Gara SB"])}</a>` : ""}</td>`;
+      html += `<td>${escapeHtml(r.specialita)}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(String(r.pb), r.tipo))}</td>`;
+      html += `<td>${escapeHtml(r.dataPb)}</td>`;
+      html += `<td class="wrap">${r.garaPb ? `<a href="${linkToGara(r.garaPb, r.dataPb)}">${escapeHtml(r.garaPb)}</a>` : ""}</td>`;
+      html += `<td class="num-cell">${r.sb !== undefined ? escapeHtml(formatRisultato(String(r.sb), r.tipo)) : ""}</td>`;
+      html += `<td>${escapeHtml(r.dataSb || "")}</td>`;
+      html += `<td class="wrap">${r.garaSb ? `<a href="${linkToGara(r.garaSb, r.dataSb)}">${escapeHtml(r.garaSb)}</a>` : ""}</td>`;
       html += "</tr>";
     });
     html += "</tbody></table></div>";
   }
 
-  // Storico Season Best per anno: calcolato qui dai risultati completi (non dal
-  // foglio, che tiene solo l'anno impostato in "Stagione corrente"), cosi' si
+  // Storico Season Best per anno: calcolato qui dai risultati completi, cosi' si
   // vede il migliore di ogni anno invece di uno solo alla volta. Usa la colonna
   // "Valido PB/SB" gia' calcolata dal foglio, che tiene conto anche del vento.
   const sbPerAnno = {};

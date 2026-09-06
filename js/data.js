@@ -256,11 +256,8 @@ function classeUfficiale(nomeFoglio) {
 // una progressione di distanza, restano in ordine alfabetico e vengono
 // mostrati dopo tutte le corse.
 const ORDINE_SPECIALITA = [
-  "80 m", "100 m", "indoor 60 m",
-  "150 m", "200 m", "indoor 200 m",
-  "300 m", "400 m", "indoor 400 m",
-  "800 m", "indoor 800 m",
-  "1500 m", "indoor 1500 m"
+  "80 m", "100 m", "150 m", "200 m", "300 m", "400 m", "800 m", "1500 m",
+  "indoor 60 m", "indoor 200 m", "indoor 400 m", "indoor 800 m", "indoor 1500 m"
 ];
 function confrontaSpecialita(a, b) {
   const ia = ORDINE_SPECIALITA.indexOf(a);
