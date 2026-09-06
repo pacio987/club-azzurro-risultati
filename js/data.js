@@ -188,3 +188,34 @@ function nelRosterUfficiale(nomeFoglio) {
     return distanzaLevenshtein(u, key) <= 2;
   });
 }
+
+// Fascia di ciascun atleta secondo l'elenco ufficiale Club Azzurro. Chi non
+// ha una fascia assegnata (i "monitorati") viene etichettato "Interesse".
+const FASCIA_UFFICIALE = {
+  "Bagaini Riccardo": "Elite", "Bottazzini Fabio": "Elite", "Calcagni Carlo": "Elite",
+  "Cicchetti Marco": "Elite", "Dedaj Arjola": "Elite", "Dieng Ndiaga": "Elite",
+  "Filippi Giuliana Chiara": "Elite", "Legnante Assunta": "Elite", "Loragno Francesco": "Elite",
+  "Manu Maxcel Amo": "Elite", "Petrillo Valentina": "Elite", "Sabatini Ambra": "Elite",
+  "Tapia Oney": "Elite",
+  "Antolini Greta": "Top", "Cavallero Edoardo": "Top", "Dalla Mana Riccardo": "Top",
+  "Fascetta Giorgia": "Top", "Inga Antonella": "Top", "Morana Davide Bartolo": "Top",
+  "Poggiani Ange Bertin": "Top", "Tonetto Lorenzo": "Top",
+  "Bona Ephrem": "Promo", "Chiarlone Matteo": "Promo", "Cortinovis Francesco": "Promo",
+  "Di Rosa Francesco": "Promo", "Diane Saliou": "Promo", "Fiore Davide": "Promo",
+  "Francullo Viola": "Promo", "Friscia Alessia": "Promo", "Imperio Francesco": "Promo",
+  "Morato Laura": "Promo", "Pirola Gabriele": "Promo", "Zani Nicholas": "Promo",
+  "Jacome Navas Marcelo Sebastian": "Interesse", "Vio Grandis Beatrice Maria": "Interesse",
+  "Chiarizia Riccardo": "Interesse", "El Idrissi Mohammed Amine": "Interesse",
+  "Maselli Marco": "Interesse", "Mastrandrea Felice": "Interesse"
+};
+
+function fasciaAtleta(nomeFoglio) {
+  const key = normalizzaNome(nomeFoglio);
+  for (const nome in FASCIA_UFFICIALE) {
+    const u = normalizzaNome(nome);
+    if (u === key || u.startsWith(key) || key.startsWith(u) || distanzaLevenshtein(u, key) <= 2) {
+      return FASCIA_UFFICIALE[nome];
+    }
+  }
+  return "Interesse";
+}

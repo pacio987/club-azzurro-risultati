@@ -6,7 +6,7 @@
   let sortKey = "Atleta", sortDir = 1;
 
   try {
-    rows = await fetchSheet("Riepilogo");
+    rows = await fetchSheet("Atleti");
   } catch (e) {
     renderState(container, ERROR_MSG, true);
     return;
@@ -15,33 +15,29 @@
   rows = rows.filter(r => nelRosterUfficiale(r["Atleta"]));
 
   if (rows.length === 0) {
-    renderState(container, "Il foglio Riepilogo risulta vuoto.");
+    renderState(container, "Il foglio Atleti risulta vuoto.");
     return;
   }
 
   function matches(r, q) {
     if (!q) return true;
-    const hay = `${r["Atleta"]} ${r["Specialita'"] || r["Specialità"] || ""}`.toLowerCase();
+    const hay = `${r["Atleta"]} ${r["Categoria/e"] || ""}`.toLowerCase();
     return hay.includes(q.toLowerCase());
   }
 
   function render() {
     const q = searchEl.value.trim();
-    const specKey = rows[0]["Specialita'"] !== undefined ? "Specialita'" : "Specialità";
-    let filtered = rows.filter(r => matches(r, q) && r["Atleta"] && r[specKey]);
+    let filtered = rows.filter(r => matches(r, q) && r["Atleta"]);
 
     filtered.sort((a, b) => {
-      let va = a[sortKey] || "", vb = b[sortKey] || "";
-      if (sortKey === "Personal Best" || sortKey === "Season Best") {
-        va = parseFloat((va || "").replace(",", ".")) || 0;
-        vb = parseFloat((vb || "").replace(",", ".")) || 0;
-      }
+      let va = sortKey === "Fascia" ? fasciaAtleta(a["Atleta"]) : (a[sortKey] || "");
+      let vb = sortKey === "Fascia" ? fasciaAtleta(b["Atleta"]) : (b[sortKey] || "");
       if (va < vb) return -1 * sortDir;
       if (va > vb) return 1 * sortDir;
       return 0;
     });
 
-    countEl.textContent = `${filtered.length} righe`;
+    countEl.textContent = `${filtered.length} atleti`;
 
     if (filtered.length === 0) {
       renderState(container, "Nessun atleta trovato con questa ricerca.");
@@ -49,9 +45,8 @@
     }
 
     const cols = [
-      ["Atleta", "Atleta"], ["Classe/i", "Classe"], [specKey, "Specialità"],
-      ["Personal Best", "PB"], ["Data PB", "Data PB"], ["Gara PB", "Gara PB"],
-      ["Season Best", "SB"], ["Data SB", "Data SB"], ["Gara SB", "Gara SB"]
+      ["Atleta", "Atleta"], ["Categoria/e", "Classe"], ["Sesso", "Sesso"],
+      ["Anno di nascita", "Anno di nascita"], ["Fascia", "Fascia"]
     ];
 
     let html = '<div class="table-wrap"><table><thead><tr>';
@@ -62,15 +57,11 @@
 
     filtered.forEach(r => {
       html += "<tr>";
-      html += `<td><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
-      html += `<td>${escapeHtml(r["Classe/i"])}</td>`;
-      html += `<td>${escapeHtml(r[specKey])}</td>`;
-      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Personal Best"], r["Tipo"]))}</td>`;
-      html += `<td>${escapeHtml(r["Data PB"])}</td>`;
-      html += `<td class="wrap">${r["Gara PB"] ? `<a href="${linkToGara(r["Gara PB"], r["Data PB"])}">${escapeHtml(r["Gara PB"])}</a>` : ""}</td>`;
-      html += `<td class="num-cell">${escapeHtml(formatRisultato(r["Season Best"], r["Tipo"]))}</td>`;
-      html += `<td>${escapeHtml(r["Data SB"])}</td>`;
-      html += `<td class="wrap">${r["Gara SB"] ? `<a href="${linkToGara(r["Gara SB"], r["Data SB"])}">${escapeHtml(r["Gara SB"])}</a>` : ""}</td>`;
+      html += `<td class="wrap"><a href="${linkToAtleta(r["Atleta"])}">${escapeHtml(r["Atleta"])}</a></td>`;
+      html += `<td>${escapeHtml(r["Categoria/e"])}</td>`;
+      html += `<td>${escapeHtml(r["Sesso"])}</td>`;
+      html += `<td>${escapeHtml(r["Anno di nascita"])}</td>`;
+      html += `<td>${escapeHtml(fasciaAtleta(r["Atleta"]))}</td>`;
       html += "</tr>";
     });
     html += "</tbody></table></div>";
