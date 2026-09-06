@@ -1,0 +1,150 @@
+(async function () {
+  const content = document.getElementById("content");
+  const nome = qs("nome");
+
+  if (!nome) {
+    renderState(content, 'Nessun atleta indicato. Torna al <a href="index.html">Riepilogo</a> e scegline uno.', true);
+    return;
+  }
+
+  let risultati, atleti;
+  try {
+    [risultati, atleti] = await Promise.all([fetchSheet("Risultati"), fetchSheet("Atleti")]);
+  } catch (e) {
+    renderState(content, ERROR_MSG, true);
+    return;
+  }
+
+  const storico = risultati.filter(r => r["Atleta"] === nome)
+    .sort((a, b) => parseDateValue(b["Data"]) - parseDateValue(a["Data"]));
+  const anagrafica = atleti.find(r => r["Atleta"] === nome);
+
+  if (storico.length === 0 && !anagrafica) {
+    renderState(content, `Nessun atleta trovato con il nome "${escapeHtml(nome)}". Torna al <a href="index.html">Riepilogo</a>.`, true);
+    return;
+  }
+
+  const classe = classeUfficiale(nome) || (anagrafica ? anagrafica["Categoria/e"] : "");
+  const sesso = anagrafica ? anagrafica["Sesso"] : "";
+  const anno = anagrafica ? anagrafica["Anno di nascita"] : "";
+
+  function rowClass(r) {
+    return rigaEvidenziata(r["Note"]);
+  }
+
+  let html = `<h1 class="page-title">${escapeHtml(nome)}</h1>`;
+  html += '<p class="athlete-meta">';
+  if (classe) html += `<span>Classe: <strong>${escapeHtml(classe)}</strong></span>`;
+  if (sesso) html += `<span>Sesso: <strong>${escapeHtml(sesso)}</strong></span>`;
+  if (anno) html += `<span>Anno di nascita: <strong>${escapeHtml(anno)}</strong></span>`;
+  html += "</p>";
+
+  // Personal Best e Season Best (stagione = anno solare attuale): calcolati qui
+  // direttamente dai risultati grezzi, non da un foglio Riepilogo separato -
+  // niente da mantenere a mano quando compare una specialita' nuova, e usa
+  // gia' la colonna "Valido PB/SB" del foglio (che esclude i risultati con
+  // vento irregolare nelle specialita' dove conta).
+  const annoCorrente = new Date().getFullYear();
+  const pbSbPerSpecialita = {};
+  storico.forEach(r => {
+    const spec = r["Specialità"], tipo = r["Tipo"];
+    const validoStr = r["Valido PB/SB"];
+    if (!spec || !tipo || !validoStr) return;
+    const valore = parseFloat(String(validoStr).replace(",", "."));
+    if (isNaN(valore)) return;
+    const annoRiga = parseInt((String(r["Data"]).match(/\d{4}$/) || [])[0], 10);
+    if (!pbSbPerSpecialita[spec]) pbSbPerSpecialita[spec] = { specialita: spec, tipo };
+    const rec = pbSbPerSpecialita[spec];
+    if (rec.pb === undefined || (tipo === "tempo" ? valore < rec.pb : valore > rec.pb)) {
+      rec.pb = valore; rec.dataPb = r["Data"]; rec.garaPb = r["Gara"];
+    }
+    if (annoRiga === annoCorrente &&
+        (rec.sb === undefined || (tipo === "tempo" ? valore < rec.sb : valore > rec.sb))) {
+      rec.sb = valore; rec.dataSb = r["Data"]; rec.garaSb = r["Gara"];
+    }
+  });
+  const speclista = Object.values(pbSbPerSpecialita)
+    .sort((a, b) => confrontaSpecialita(a.specialita, b.specialita));
+
+  if (speclista.length > 0) {
+    html += '<h2 class="section-title">Personal Best e Season Best</h2>';
+    html += '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Specialità</th><th>PB</th><th>Data PB</th><th>Gara PB</th><th>SB</th><th>Data SB</th><th>Gara SB</th>' +
+      '</tr></thead><tbody>';
+    speclista.forEach(r => {
+      html += "<tr>";
+      html += `<td>${escapeHtml(r.specialita)}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(String(r.pb), r.tipo))}</td>`;
+      html += `<td>${escapeHtml(r.dataPb)}</td>`;
+      html += `<td class="wrap">${r.garaPb ? `<a href="${linkToGara(r.garaPb, r.dataPb)}">${escapeHtml(r.garaPb)}</a>` : ""}</td>`;
+      html += `<td class="num-cell">${r.sb !== undefined ? escapeHtml(formatRisultato(String(r.sb), r.tipo)) : ""}</td>`;
+      html += `<td>${escapeHtml(r.dataSb || "")}</td>`;
+      html += `<td class="wrap">${r.garaSb ? `<a href="${linkToGara(r.garaSb, r.dataSb)}">${escapeHtml(r.garaSb)}</a>` : ""}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+  }
+
+  // Storico Season Best per anno: calcolato qui dai risultati completi, cosi' si
+  // vede il migliore di ogni anno invece di uno solo alla volta. Usa la colonna
+  // "Valido PB/SB" gia' calcolata dal foglio, che tiene conto anche del vento.
+  const sbPerAnno = {};
+  storico.forEach(r => {
+    const spec = r["Specialità"], tipo = r["Tipo"];
+    const validoStr = r["Valido PB/SB"];
+    if (!spec || !tipo || !validoStr) return;
+    const valore = parseFloat(String(validoStr).replace(",", "."));
+    if (isNaN(valore)) return;
+    const anno = (String(r["Data"]).match(/\d{4}$/) || [])[0];
+    if (!anno) return;
+    const chiave = spec + "|" + anno;
+    const attuale = sbPerAnno[chiave];
+    const migliore = !attuale ||
+      (tipo === "tempo" ? valore < attuale.valore : valore > attuale.valore);
+    if (migliore) sbPerAnno[chiave] = { specialita: spec, tipo, anno, valore, data: r["Data"], gara: r["Gara"] };
+  });
+  const righeSbAnno = Object.values(sbPerAnno).sort((a, b) =>
+    confrontaSpecialita(a.specialita, b.specialita) || b.anno.localeCompare(a.anno));
+
+  if (righeSbAnno.length > 0) {
+    html += '<h2 class="section-title">Season Best per anno</h2>';
+    html += '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Specialità</th><th>Anno</th><th>SB</th><th>Data</th><th>Gara</th>' +
+      '</tr></thead><tbody>';
+    righeSbAnno.forEach(r => {
+      html += "<tr>";
+      html += `<td>${escapeHtml(r.specialita)}</td>`;
+      html += `<td>${r.anno}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(String(r.valore), r.tipo))}</td>`;
+      html += `<td>${escapeHtml(r.data)}</td>`;
+      html += `<td class="wrap">${r.gara ? `<a href="${linkToGara(r.gara, r.data)}">${escapeHtml(r.gara)}</a>` : ""}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+  }
+
+  html += `<h2 class="section-title">Storico risultati (${storico.length})</h2>`;
+  if (storico.length === 0) {
+    html += '<p class="state-msg">Nessun risultato ancora registrato.</p>';
+  } else {
+    html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span><span><i class="swatch ri"></i> Record Italiano</span><span><i class="swatch re"></i> Record Europeo</span><span><i class="swatch wr"></i> Record del Mondo</span></div>';
+    html += '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Data</th><th>Gara</th><th>Specialità</th><th>Risultato</th><th>Vento</th><th>Pos.</th><th>Note</th>' +
+      '</tr></thead><tbody>';
+    storico.forEach(r => {
+      html += `<tr class="${rowClass(r)}">`;
+      html += `<td>${escapeHtml(r["Data"])}</td>`;
+      html += `<td class="wrap">${r["Gara"] ? `<a href="${linkToGara(r["Gara"], r["Data"])}">${escapeHtml(r["Gara"])}</a>` : ""}</td>`;
+      html += `<td>${escapeHtml(r["Specialità"])}</td>`;
+      html += `<td class="num-cell">${escapeHtml(r["Risultato"])}</td>`;
+      html += `<td>${escapeHtml(r["Vento"])}</td>`;
+      html += `<td>${escapeHtml(r["Posizione"])}</td>`;
+      html += `<td class="note-cell">${escapeHtml(r["Note"])}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+  }
+
+  content.innerHTML = html;
+  document.title = `${nome} · Club Azzurro`;
+})();
