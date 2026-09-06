@@ -31,7 +31,6 @@
   }
 
   const data = righe[0]["Data"];
-  const link = righe.find(r => r["Link"])?.["Link"];
 
   let html = `<h1 class="page-title">${escapeHtml(nome)}</h1>`;
   html += '<p class="page-subtitle">';
@@ -41,7 +40,7 @@
 
   html += '<div class="legend"><span><i class="swatch gold"></i> Personal Best</span><span><i class="swatch azzurro"></i> Season Best</span><span><i class="swatch ri"></i> Record Italiano</span><span><i class="swatch re"></i> Record Europeo</span><span><i class="swatch wr"></i> Record del Mondo</span></div>';
   html += '<div class="table-wrap"><table><thead><tr>' +
-    '<th>Atleta</th><th>Specialità</th><th>Cat.</th><th>Sesso</th><th>Risultato</th><th>Vento</th><th>Pos.</th><th>Note</th>' +
+    '<th>Atleta</th><th>Specialità</th><th>Cat.</th><th>Sesso</th><th>Risultato</th><th>Vento</th><th>Pos.</th><th>Note</th><th>Link</th>' +
     '</tr></thead><tbody>';
   righe.forEach(r => {
     html += `<tr class="${rowClass(r)}">`;
@@ -53,6 +52,7 @@
     html += `<td>${escapeHtml(r["Vento"])}</td>`;
     html += `<td>${escapeHtml(r["Posizione"])}</td>`;
     html += `<td class="note-cell">${escapeHtml(r["Note"])}</td>`;
+    html += `<td>${r["Link"] ? `<a href="${escapeHtml(r["Link"])}" target="_blank" rel="noopener">link</a>` : ""}</td>`;
     html += "</tr>";
   });
   html += "</tbody></table></div>";
