@@ -146,11 +146,11 @@ tbody td.note-cell { white-space: normal; max-width: 130px; }
 tbody tr:hover { background: var(--azzurro-light); }
 .num-cell { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 1.02rem; }
 
-tr.is-pb td:first-child { box-shadow: inset 3px 0 0 var(--gold); }
-tr.is-sb td:first-child { box-shadow: inset 3px 0 0 var(--azzurro); }
-tr.is-ri td:first-child { box-shadow: inset 3px 0 0 var(--ri); }
-tr.is-re td:first-child { box-shadow: inset 3px 0 0 var(--re); }
-tr.is-wr td:first-child { box-shadow: inset 3px 0 0 var(--wr); }
+tr.is-pb td:first-child { background-image: linear-gradient(to right, var(--gold) 3px, transparent 0); }
+tr.is-sb td:first-child { background-image: linear-gradient(to right, var(--azzurro) 3px, transparent 0); }
+tr.is-ri td:first-child { background-image: linear-gradient(to right, var(--ri) 3px, transparent 0); }
+tr.is-re td:first-child { background-image: linear-gradient(to right, var(--re) 3px, transparent 0); }
+tr.is-wr td:first-child { background-image: linear-gradient(to right, var(--wr) 3px, transparent 0); }
 
 .legend { display: flex; gap: 18px; margin: 10px 0 20px; font-size: 0.85rem; color: var(--muted); flex-wrap: wrap; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
