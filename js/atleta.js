@@ -62,6 +62,45 @@
     html += "</tbody></table></div>";
   }
 
+  // Storico Season Best per anno: calcolato qui dai risultati completi (non dal
+  // foglio, che tiene solo l'anno impostato in "Stagione corrente"), cosi' si
+  // vede il migliore di ogni anno invece di uno solo alla volta. Usa la colonna
+  // "Valido PB/SB" gia' calcolata dal foglio, che tiene conto anche del vento.
+  const sbPerAnno = {};
+  storico.forEach(r => {
+    const spec = r["Specialità"], tipo = r["Tipo"];
+    const validoStr = r["Valido PB/SB"];
+    if (!spec || !tipo || !validoStr) return;
+    const valore = parseFloat(String(validoStr).replace(",", "."));
+    if (isNaN(valore)) return;
+    const anno = (String(r["Data"]).match(/\d{4}$/) || [])[0];
+    if (!anno) return;
+    const chiave = spec + "|" + anno;
+    const attuale = sbPerAnno[chiave];
+    const migliore = !attuale ||
+      (tipo === "tempo" ? valore < attuale.valore : valore > attuale.valore);
+    if (migliore) sbPerAnno[chiave] = { specialita: spec, tipo, anno, valore, data: r["Data"], gara: r["Gara"] };
+  });
+  const righeSbAnno = Object.values(sbPerAnno).sort((a, b) =>
+    a.specialita.localeCompare(b.specialita) || b.anno.localeCompare(a.anno));
+
+  if (righeSbAnno.length > 0) {
+    html += '<h2 class="section-title">Season Best per anno</h2>';
+    html += '<div class="table-wrap"><table><thead><tr>' +
+      '<th>Specialità</th><th>Anno</th><th>SB</th><th>Data</th><th>Gara</th>' +
+      '</tr></thead><tbody>';
+    righeSbAnno.forEach(r => {
+      html += "<tr>";
+      html += `<td>${escapeHtml(r.specialita)}</td>`;
+      html += `<td>${r.anno}</td>`;
+      html += `<td class="num-cell">${escapeHtml(formatRisultato(String(r.valore), r.tipo))}</td>`;
+      html += `<td>${escapeHtml(r.data)}</td>`;
+      html += `<td class="wrap">${r.gara ? `<a href="${linkToGara(r.gara, r.data)}">${escapeHtml(r.gara)}</a>` : ""}</td>`;
+      html += "</tr>";
+    });
+    html += "</tbody></table></div>";
+  }
+
   html += `<h2 class="section-title">Storico risultati (${storico.length})</h2>`;
   if (storico.length === 0) {
     html += '<p class="state-msg">Nessun risultato ancora registrato.</p>';
