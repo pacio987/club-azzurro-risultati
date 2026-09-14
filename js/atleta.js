@@ -111,8 +111,11 @@
     html += '<div class="table-wrap"><table><thead><tr>' +
       '<th>Specialità</th><th>Anno</th><th>SB</th><th>Data</th><th>Gara</th>' +
       '</tr></thead><tbody>';
-    righeSbAnno.forEach(r => {
-      html += "<tr>";
+    let specialitaPrecedente = null;
+    righeSbAnno.forEach((r, i) => {
+      const nuovoGruppo = i > 0 && r.specialita !== specialitaPrecedente;
+      specialitaPrecedente = r.specialita;
+      html += `<tr class="${nuovoGruppo ? "nuova-specialita" : ""}">`;
       html += `<td>${escapeHtml(r.specialita)}</td>`;
       html += `<td>${r.anno}</td>`;
       html += `<td class="num-cell">${escapeHtml(formatRisultato(String(r.valore), r.tipo))}</td>`;
