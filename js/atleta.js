@@ -103,8 +103,9 @@
       (tipo === "tempo" ? valore < attuale.valore : valore > attuale.valore);
     if (migliore) sbPerAnno[chiave] = { specialita: spec, tipo, anno, valore, data: r["Data"], gara: r["Gara"] };
   });
-  const righeSbAnno = Object.values(sbPerAnno).sort((a, b) =>
-    confrontaSpecialita(a.specialita, b.specialita) || b.anno.localeCompare(a.anno));
+  const righeSbAnno = Object.values(sbPerAnno)
+    .filter(r => ORDINE_SPECIALITA.indexOf(r.specialita) >= 0)
+    .sort((a, b) => confrontaSpecialita(a.specialita, b.specialita) || b.anno.localeCompare(a.anno));
 
   if (righeSbAnno.length > 0) {
     html += '<h2 class="section-title">Season Best per anno</h2>';
